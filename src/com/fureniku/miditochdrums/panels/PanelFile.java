@@ -18,6 +18,7 @@ public class PanelFile extends PanelUI {
     GridBagLayout layout = new GridBagLayout();
 
     public PanelFile(ConverterScreen parent) {
+
         parentConstraints.gridx = 0;
         parentConstraints.gridy = 0;
         parentConstraints.fill = GridBagConstraints.BOTH;
@@ -39,11 +40,13 @@ public class PanelFile extends PanelUI {
                 }
                 File selected = chooser.getSelectedFile();
 
-                if (getExtension(selected.getName()).equalsIgnoreCase("mid") || getExtension(selected.getName()).equalsIgnoreCase("midi")) {
+                if (getExtension(selected.getName()).equalsIgnoreCase("mid")
+                        || getExtension(selected.getName()).equalsIgnoreCase("midi")) {
                     parent.setMidiFile(chooser.getSelectedFile());
                     fileDir.setText(chooser.getSelectedFile().getAbsolutePath());
                 } else {
-                    System.out.println("Invalid file type " + getExtension(selected.getName()) + " selected, please try again.");
+                    System.out.println(
+                            "Invalid file type " + getExtension(selected.getName()) + " selected, please try again.");
                 }
             }
         });
@@ -55,7 +58,7 @@ public class PanelFile extends PanelUI {
 
         c.gridx = 0;
         c.weightx = 0.8;
-        c.insets = new Insets(0,10,0,5);
+        c.insets = new Insets(0, 10, 0, 5);
         c.anchor = GridBagConstraints.CENTER;
         JScrollPane jsp = new JScrollPane(fileDir);
         jsp.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
@@ -63,7 +66,7 @@ public class PanelFile extends PanelUI {
 
         c.gridx = 1;
         c.weightx = 0.2;
-        c.insets = new Insets(10,5,10,10);
+        c.insets = new Insets(10, 5, 10, 10);
         c.anchor = GridBagConstraints.LINE_END;
         this.add(openFile, c);
     }

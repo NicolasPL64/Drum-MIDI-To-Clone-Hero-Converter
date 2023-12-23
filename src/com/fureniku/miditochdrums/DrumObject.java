@@ -7,12 +7,14 @@ public class DrumObject {
     private int id;
     private long tick;
     private boolean isCymbal;
+    private boolean isGhost;
     private boolean isKick;
 
-    public DrumObject(int id, long tick, boolean isCymbal) {
+    public DrumObject(int id, long tick, boolean isCymbal, boolean isGhost) {
         this.id = id;
         this.tick = tick;
         this.isCymbal = isCymbal;
+        this.isGhost = isGhost;
 
         this.isKick = id == Drums.KICK.getId() || id == Drums.KICK_DOUBLE.getId();
 
@@ -24,6 +26,9 @@ public class DrumObject {
             panelIn.addToList("  " + tick + " = N " + (id + 64) + " 0");
         }
         panelIn.addToList("  " + tick + " = N " + id + " 0");
+        if (isGhost) {
+            panelIn.addToList("  " + tick + " = N " + (id + 39) + " 0");
+        }
 
         return panelIn;
     }

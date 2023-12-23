@@ -1,8 +1,6 @@
 package com.fureniku.miditochdrums.panels;
 
 import com.fureniku.miditochdrums.ConverterScreen;
-import com.fureniku.miditochdrums.MIDIToCHDrums;
-
 import javax.swing.*;
 import java.awt.*;
 
@@ -18,22 +16,30 @@ public class PanelNotes extends PanelUI {
     JLabel cymbalGreenLabel = new JLabel("Green Cymbal (Crash)");
     JLabel ignoredLabel = new JLabel("Ignored Notes");
 
-    JTextField kickText = new JTextField("35,36"); //0 - acoustic bass drum, bass drum
-    JTextField redText = new JTextField("38,39,40"); //1 - acoustic snare, hand clap, electric snarer
-    JTextField yellowText = new JTextField("48,50"); //2 - hi mid tom, hi tom
-    JTextField blueText = new JTextField("45,47,56"); //3 - low tom, low mid tom, cowbell
-    JTextField greenText = new JTextField("41,43"); //4 - low floor tom, high floor tom
-    JTextField cymbalYellowText = new JTextField("42,44,46,54,55,95"); //2 - closed HH, pedal HH, open HH, tambourine, splash
-    JTextField cymbalBlueText = new JTextField("51,52,53,59"); //3 - ride 1, china, ride bell, ride 2
-    JTextField cymbalGreenText = new JTextField("49,57"); //4 - crash 1, crash 2
-    JTextField ignoredText = new JTextField("0,37,58"); //null, side stick, vibra slap, everything 60+ is non-standard too.
+    public static JTextField kickText = new JTextField("35,36"); //0 - acoustic bass drum, bass drum
+    public static JTextField yellowText = new JTextField("48,50"); //2 - hi mid tom, hi tom
+    public static JTextField redText = new JTextField("38,39,40"); //1 - acoustic snare, hand clap, electric snarer
+    public static JTextField blueText = new JTextField("45,47,56"); //3 - low tom, low mid tom, cowbell
+    public static JTextField greenText = new JTextField("41,43"); //4 - low floor tom, high floor tom
+    public static JTextField cymbalYellowText = new JTextField("42,44,46,54,55,95"); //2 - closed HH, pedal HH, open HH, tambourine, splash
+    public static JTextField cymbalBlueText = new JTextField("51,52,53,59"); //3 - ride 1, china, ride bell, ride 2
+    public static JTextField cymbalGreenText = new JTextField("49,57"); //4 - crash 1, crash 2
+    public static JTextField ignoredText = new JTextField("0,37,58"); //null, side stick, vibra slap, everything 60+ is non-standard too.
     //56 - cowbell
 
     GridBagLayout layout = new GridBagLayout();
 
     public PanelNotes(ConverterScreen parent) {
+        redLabel.setForeground(Color.red);
+        yellowLabel.setForeground(new Color(224, 210, 7));
+        blueLabel.setForeground(Color.blue);
+        greenLabel.setForeground(new Color(10, 191, 4));
+        cymbalYellowLabel.setForeground(new Color(224, 210, 7));
+        cymbalBlueLabel.setForeground(Color.blue);
+        cymbalGreenLabel.setForeground(new Color(10, 191, 4));
+
         this.setBorder(BorderFactory.createLineBorder(Color.black));
-        parentConstraints.insets = new Insets(5,5,5,5);
+        parentConstraints.insets = new Insets(5, 5, 5, 5);
         parentConstraints.gridx = 0;
         parentConstraints.gridy = 2;
         parentConstraints.fill = GridBagConstraints.BOTH;
@@ -48,13 +54,13 @@ public class PanelNotes extends PanelUI {
         c.weighty = 0.1;
 
         //Labels
-        c.insets = new Insets(5,10,5,5);
+        c.insets = new Insets(5, 10, 5, 5);
 
         c.gridx = 0;
         c.gridy = 0;
         this.add(kickLabel, c);
 
-        c.insets = new Insets(0,10,5,5);
+        c.insets = new Insets(0, 10, 5, 5);
 
         c.gridx = 0;
         c.gridy = 1;
@@ -89,7 +95,7 @@ public class PanelNotes extends PanelUI {
         this.add(ignoredLabel, c);
 
         //Text Fields
-        c.insets = new Insets(0,5,5,10);
+        c.insets = new Insets(0, 5, 5, 10);
         c.weightx = 0.6;
 
         c.gridx = 1;
@@ -129,15 +135,41 @@ public class PanelNotes extends PanelUI {
         this.add(ignoredText, c);
     }
 
-    public boolean isKick(int id) { return isCorrectDrum(kickText, id); }
-    public boolean isRed(int id) { return isCorrectDrum(redText, id); }
-    public boolean isYellow(int id) { return isCorrectDrum(yellowText, id); }
-    public boolean isBlue(int id) { return isCorrectDrum(blueText, id); }
-    public boolean isGreen(int id) { return isCorrectDrum(greenText, id); }
-    public boolean isYellowCymbal(int id) { return isCorrectDrum(cymbalYellowText, id); }
-    public boolean isBlueCymbal(int id) { return isCorrectDrum(cymbalBlueText, id); }
-    public boolean isGreenCymbal(int id) { return isCorrectDrum(cymbalGreenText, id); }
-    public boolean isIgnored(int id) { return isCorrectDrum(ignoredText, id); }
+    public boolean isKick(int id) {
+        return isCorrectDrum(kickText, id);
+    }
+
+    public boolean isRed(int id) {
+        return isCorrectDrum(redText, id);
+    }
+
+    public boolean isYellow(int id) {
+        return isCorrectDrum(yellowText, id);
+    }
+
+    public boolean isBlue(int id) {
+        return isCorrectDrum(blueText, id);
+    }
+
+    public boolean isGreen(int id) {
+        return isCorrectDrum(greenText, id);
+    }
+
+    public boolean isYellowCymbal(int id) {
+        return isCorrectDrum(cymbalYellowText, id);
+    }
+
+    public boolean isBlueCymbal(int id) {
+        return isCorrectDrum(cymbalBlueText, id);
+    }
+
+    public boolean isGreenCymbal(int id) {
+        return isCorrectDrum(cymbalGreenText, id);
+    }
+
+    public boolean isIgnored(int id) {
+        return isCorrectDrum(ignoredText, id);
+    }
 
     public boolean isCorrectDrum(JTextField text, int id) {
         String[] str = text.getText().replaceAll(" ", "").split(",");

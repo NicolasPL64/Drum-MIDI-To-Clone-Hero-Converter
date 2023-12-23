@@ -5,13 +5,23 @@ import com.fureniku.miditochdrums.panels.*;
 import javax.sound.midi.*;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.dnd.DnDConstants;
+import java.awt.dnd.DropTarget;
+import java.awt.dnd.DropTargetDragEvent;
+import java.awt.dnd.DropTargetDropEvent;
+import java.awt.dnd.DropTargetEvent;
+import java.awt.dnd.DropTargetListener;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
 
-public class ConverterScreen extends JFrame {
+public class ConverterScreen extends JFrame implements DropTargetListener {
 
     private File midiFile = null;
 
@@ -42,6 +52,9 @@ public class ConverterScreen extends JFrame {
         this.getContentPane().add(panelNotes, panelNotes.getConstraints());
         this.getContentPane().add(panelOutput, panelOutput.getConstraints());
         this.getContentPane().add(panelButtons, panelButtons.getConstraints());
+
+        DropTarget dropTarget = new DropTarget(this, DnDConstants.ACTION_COPY_OR_MOVE, this);
+        this.setDropTarget(dropTarget);
 
         this.setVisible(true);
         this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -109,34 +122,41 @@ public class ConverterScreen extends JFrame {
                                     firstTick = tick;
                                 }
                                 int key = sm.getData1();
+                                int velocity = sm.getData2();
+                                boolean isGhost = false;
+
+                                if (velocity <= Integer.parseInt(PanelOptions.ghostThreshold.getText()))
+                                    isGhost = true;
+                                else
+                                    isGhost = false;
 
                                 if (panelNotes.isKick(key)) {
                                     if (panelOptions.shouldAuto2xKick()) {
                                         if (!lastWasDouble && lastKick + panelOptions.getKickTime() >= tick) {
                                             lastWasDouble = true;
-                                            printNote(tick, 32, false);
+                                            printNote(tick, 32, false, false);
                                         } else {
                                             lastWasDouble = false;
-                                            printNote(tick, 0, false);
+                                            printNote(tick, 0, false, false);
                                         }
                                         lastKick = tick;
                                     } else {
-                                        printNote(tick, 0, false);
+                                        printNote(tick, 0, false, false);
                                     }
                                 } else if (panelNotes.isRed(key)) { //snare
-                                    printNote(tick, 1, false);
+                                    printNote(tick, 1, false, isGhost);
                                 } else if (panelNotes.isYellowCymbal(key)) { //hi hat open/closed / splash
-                                    printNote(tick, 2, true);
+                                    printNote(tick, 2, true, isGhost);
                                 } else if (panelNotes.isGreenCymbal(key)) { //crash
-                                    printNote(tick, 4, true);
+                                    printNote(tick, 4, true, isGhost);
                                 } else if (panelNotes.isBlueCymbal(key)) { //ride
-                                    printNote(tick, 3, true);
+                                    printNote(tick, 3, true, isGhost);
                                 } else if (panelNotes.isGreen(key)) { //floor tom
-                                    printNote(tick, 4, false);
+                                    printNote(tick, 4, false, isGhost);
                                 } else if (panelNotes.isBlue(key)) { //mid tom
-                                    printNote(tick, 3, false);
+                                    printNote(tick, 3, false, isGhost);
                                 } else if (panelNotes.isYellow(key)) { //high tom
-                                    printNote(tick, 2, false);
+                                    printNote(tick, 2, false, isGhost);
                                 } else if (!panelNotes.isIgnored(key)) {
                                     panelOutput.addError("Unknown drum ID " + key + " at position " + tick + "\n");
                                 }
@@ -145,9 +165,10 @@ public class ConverterScreen extends JFrame {
                     }
                 }
                 if (panelOutput.isListEmpty()) {
-                    panelOutput.addLog("\nNo notes found on specified channel. Channel activity on track " + i + " as follows:\n");
+                    panelOutput.addLog(
+                            "\nNo notes found on specified channel. Channel activity on track " + i + " as follows:\n");
                     for (int k = 0; k < channelActivity.length; k++) {
-                        panelOutput.addLog("Channel " + (k+1) + ": " + channelActivity[k] + " Notes");
+                        panelOutput.addLog("Channel " + (k + 1) + ": " + channelActivity[k] + " Notes");
                     }
                     panelOutput.addLog("\nSet channel ID to -1 to use all available channels.");
                 }
@@ -222,36 +243,30 @@ public class ConverterScreen extends JFrame {
         if (finalUseToms.size() == 4) {
             panelNotes.setYellow(finalUseToms.get(3) + "");
             panelNotes.setBlue(finalUseToms.get(2) + "");
-            panelNotes.setGreen(finalUseToms.get(1) + "");
-            panelNotes.setGreen(finalUseToms.get(0) + "");
+            panelNotes.setGreen(finalUseToms.get(1) + "," + finalUseToms.get(0));
         }
 
         if (finalUseToms.size() == 5) {
             panelNotes.setYellow(finalUseToms.get(4) + "");
-            panelNotes.setBlue(finalUseToms.get(3) + "");
-            panelNotes.setBlue(finalUseToms.get(2) + "");
-            panelNotes.setGreen(finalUseToms.get(1) + "");
-            panelNotes.setGreen(finalUseToms.get(0) + "");
+            panelNotes.setBlue(finalUseToms.get(3) + "," + finalUseToms.get(2));
+            panelNotes.setGreen(finalUseToms.get(1) + "," + finalUseToms.get(0));
         }
 
         if (finalUseToms.size() == 6) {
-            panelNotes.setYellow(finalUseToms.get(5) + "");
-            panelNotes.setYellow(finalUseToms.get(4) + "");
-            panelNotes.setBlue(finalUseToms.get(3) + "");
-            panelNotes.setBlue(finalUseToms.get(2) + "");
-            panelNotes.setGreen(finalUseToms.get(1) + "");
-            panelNotes.setGreen(finalUseToms.get(0) + "");
+            panelNotes.setYellow(finalUseToms.get(5) + "," + finalUseToms.get(4));
+            panelNotes.setBlue(finalUseToms.get(3) + "," + finalUseToms.get(2));
+            panelNotes.setGreen(finalUseToms.get(1) + "," + finalUseToms.get(0));
         }
     }
 
-    public void printNote(long tick, int id, boolean cymbal) {
+    public void printNote(long tick, int id, boolean cymbal, boolean isGhost) {
         long tickFinal = tick - firstTick + panelOptions.getStartTime();
 
         if (prevTick != tickFinal) {
             writeNoteToFile(tickFinal);
         }
 
-        DrumObject drum = new DrumObject(id, tickFinal, cymbal);
+        DrumObject drum = new DrumObject(id, tickFinal, cymbal, isGhost);
 
         if (drum.isKick()) { //If it's a kick, set the kick
             drumKick = drum;
@@ -306,8 +321,10 @@ public class ConverterScreen extends JFrame {
             drum2.addToList(panelOutput);
 
         } else { //Else, just place the drum we have.
-            if (drum1 != null) drum1.addToList(panelOutput);
-            if (drum2 != null) drum2.addToList(panelOutput);
+            if (drum1 != null)
+                drum1.addToList(panelOutput);
+            if (drum2 != null)
+                drum2.addToList(panelOutput);
         }
 
         //Reset drums to null ready for next tick
@@ -315,4 +332,69 @@ public class ConverterScreen extends JFrame {
         drum2 = null;
         drumKick = null;
     }
+
+    @Override
+    public void dragEnter(DropTargetDragEvent dtde) {
+    }
+
+    @Override
+    public void dragOver(DropTargetDragEvent dtde) {
+    }
+
+    @Override
+    public void dropActionChanged(DropTargetDragEvent dtde) {
+    }
+
+    @Override
+    public void dragExit(DropTargetEvent dte) {
+    }
+
+    @Override
+    public void drop(DropTargetDropEvent dtde) {
+        try {
+            Transferable transferable = dtde.getTransferable();
+            if (transferable.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
+                dtde.acceptDrop(dtde.getDropAction());
+
+                List<File> fileList = (List<File>) transferable.getTransferData(DataFlavor.javaFileListFlavor);
+
+                if (fileList.get(0).getName().toLowerCase().endsWith(".txt")) {
+                    System.out.println(fileList.get(0));
+
+                    BufferedReader reader = new BufferedReader(new FileReader(fileList.get(0)));
+
+                    PanelOptions.fullFile.setSelected(Boolean.parseBoolean(reader.readLine()));
+                    PanelOptions.auto2xKick.setSelected(Boolean.parseBoolean(reader.readLine()));
+                    PanelOptions.autoToms.setSelected(Boolean.parseBoolean(reader.readLine()));
+
+                    PanelOptions.startPos.setText(reader.readLine());
+                    PanelOptions.kickTime.setText(reader.readLine());
+                    PanelOptions.channelId.setText(reader.readLine());
+                    PanelOptions.midiTicks.setText(reader.readLine());
+                    PanelOptions.chTicks.setText(reader.readLine());
+                    PanelOptions.ghostThreshold.setText(reader.readLine());
+
+                    PanelNotes.kickText.setText(reader.readLine());
+                    PanelNotes.redText.setText(reader.readLine());
+                    PanelNotes.yellowText.setText(reader.readLine());
+                    PanelNotes.blueText.setText(reader.readLine());
+                    PanelNotes.greenText.setText(reader.readLine());
+                    PanelNotes.cymbalYellowText.setText(reader.readLine());
+                    PanelNotes.cymbalBlueText.setText(reader.readLine());
+                    PanelNotes.cymbalGreenText.setText(reader.readLine());
+                    PanelNotes.ignoredText.setText(reader.readLine());
+
+                } else
+                    JOptionPane.showMessageDialog(this, "Invalid file type.", "Error", JOptionPane.ERROR_MESSAGE);
+
+                dtde.dropComplete(true);
+            } else {
+                dtde.rejectDrop();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            dtde.rejectDrop();
+        }
+    }
+
 }
